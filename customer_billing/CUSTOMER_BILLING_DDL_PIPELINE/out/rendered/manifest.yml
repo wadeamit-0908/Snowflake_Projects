@@ -1,0 +1,13 @@
+manifest_version: 2
+type: DCM_PROJECT
+default_target: "DEV"
+
+targets:
+  DEV:
+    account_identifier: GQWRSZG-CD67068
+    project_name: "CUSTOMER_BILLING_DB.PUBLIC.CUSTOMER_BILLING_DDL_PIPELINE"
+    project_owner: ACCOUNTADMIN
+
+assets:
+  project:
+    path: '**/*'
