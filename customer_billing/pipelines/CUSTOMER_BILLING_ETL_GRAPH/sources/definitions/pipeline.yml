@@ -1,0 +1,114 @@
+definitions:
+  - resource: code_bundle
+    name: CUSTOMER_BILLING_DB.PUBLIC.customer_billing_etl_graph_k9ylp
+    from:
+      type: asset
+      asset: project
+  - resource: task
+    name: CUSTOMER_BILLING_DB.PUBLIC.STAGE_1_UNZIP_TASK
+    definition:
+      type: code_bundle
+      name: CUSTOMER_BILLING_DB.PUBLIC.customer_billing_etl_graph_k9ylp
+      entrypoint: notebooks/bronze/stage_1_unzip_files.ipynb
+      arguments: []
+      specification:
+        bundle:
+          type: custom
+          compute_type: compute_pool
+          compute_options:
+            runtime_version: V3-CPU-PY3.12
+            compute_pool: SYSTEM_COMPUTE_POOL_CPU
+            query_warehouse: COMPUTE_WH
+          language: python
+  - resource: task_graph_object
+    name: CUSTOMER_BILLING_DB.PUBLIC.STAGE_1_UNZIP_TASK_graph
+    roots:
+      - CUSTOMER_BILLING_DB.PUBLIC.STAGE_1_UNZIP_TASK
+    overlap_policy: NO_OVERLAP
+    task_defaults:
+      warehouse: COMPUTE_WH
+  - resource: task
+    name: CUSTOMER_BILLING_DB.PUBLIC.STAGE_2_LOAD_DATA
+    predecessors:
+      - CUSTOMER_BILLING_DB.PUBLIC.STAGE_1_UNZIP_TASK
+    definition:
+      type: code_bundle
+      name: CUSTOMER_BILLING_DB.PUBLIC.customer_billing_etl_graph_k9ylp
+      entrypoint: notebooks/bronze/stage_2_load_data.ipynb
+      specification:
+        bundle:
+          type: custom
+          compute_type: compute_pool
+          compute_options:
+            runtime_version: V3-CPU-PY3.12
+            compute_pool: SYSTEM_COMPUTE_POOL_CPU
+            query_warehouse: COMPUTE_WH
+          language: python
+  - resource: task
+    name: CUSTOMER_BILLING_DB.PUBLIC.STAGE_3_ZIP_ARCHIVE
+    predecessors:
+      - CUSTOMER_BILLING_DB.PUBLIC.STAGE_2_LOAD_DATA
+    definition:
+      type: code_bundle
+      name: CUSTOMER_BILLING_DB.PUBLIC.customer_billing_etl_graph_k9ylp
+      entrypoint: notebooks/bronze/stage_3_zip_archive.ipynb
+      specification:
+        bundle:
+          type: custom
+          compute_type: compute_pool
+          compute_options:
+            runtime_version: V3-CPU-PY3.12
+            compute_pool: SYSTEM_COMPUTE_POOL_CPU
+            query_warehouse: COMPUTE_WH
+          language: python
+  - resource: task
+    name: CUSTOMER_BILLING_DB.PUBLIC.BRONZE_TO_SILVER
+    predecessors:
+      - CUSTOMER_BILLING_DB.PUBLIC.STAGE_3_ZIP_ARCHIVE
+    definition:
+      type: code_bundle
+      name: CUSTOMER_BILLING_DB.PUBLIC.customer_billing_etl_graph_k9ylp
+      entrypoint: notebooks/silver/bronze_to_silver.ipynb
+      specification:
+        bundle:
+          type: custom
+          compute_type: compute_pool
+          compute_options:
+            runtime_version: V3-CPU-PY3.12
+            compute_pool: SYSTEM_COMPUTE_POOL_CPU
+            query_warehouse: COMPUTE_WH
+          language: python
+  - resource: task
+    name: CUSTOMER_BILLING_DB.PUBLIC.SILVER_TO_GOLD
+    predecessors:
+      - CUSTOMER_BILLING_DB.PUBLIC.BRONZE_TO_SILVER
+    definition:
+      type: code_bundle
+      name: CUSTOMER_BILLING_DB.PUBLIC.customer_billing_etl_graph_k9ylp
+      entrypoint: notebooks/gold/silver_to_gold.ipynb
+      specification:
+        bundle:
+          type: custom
+          compute_type: compute_pool
+          compute_options:
+            runtime_version: V3-CPU-PY3.12
+            compute_pool: SYSTEM_COMPUTE_POOL_CPU
+            query_warehouse: COMPUTE_WH
+          language: python
+  - resource: task
+    name: CUSTOMER_BILLING_DB.PUBLIC.EMAIL_NOTIFICATION
+    predecessors:
+      - CUSTOMER_BILLING_DB.PUBLIC.SILVER_TO_GOLD
+    definition:
+      type: code_bundle
+      name: CUSTOMER_BILLING_DB.PUBLIC.customer_billing_etl_graph_k9ylp
+      entrypoint: notebooks/prerequesite/email_notification.ipynb
+      specification:
+        bundle:
+          type: custom
+          compute_type: compute_pool
+          compute_options:
+            runtime_version: V3-CPU-PY3.12
+            compute_pool: SYSTEM_COMPUTE_POOL_CPU
+            query_warehouse: COMPUTE_WH
+          language: python
